@@ -274,6 +274,8 @@ int main() {
 
     Mesh mesh = ExtrudeImage(image);
 
+    std::cout << "Index count: " << mesh.indices.size() << std::endl;
+
     VertexAttributeObject VAO3D{ };
 
     VertexBufferObject VBO3D{ mesh.vertices };
@@ -340,7 +342,7 @@ int main() {
             solidShader.SetMat4("mvp", mvp);
 
             VAO3D.Bind();
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+            glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, nullptr);
 
             rendererTarget3D.Unbind();
         }

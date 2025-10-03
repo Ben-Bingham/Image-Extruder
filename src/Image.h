@@ -12,7 +12,5 @@ public:
 	Image(const std::string& path, bool flip = true);
 
 	glm::ivec2 size{ 0, 0 };
-
-private:
-	std::vector<unsigned char> m_Data;
+	std::vector<unsigned char> data;
 };
