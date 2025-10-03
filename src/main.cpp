@@ -20,6 +20,8 @@
 #include <utility/TimeScope.h>
 #include <utility/Transform.h>
 
+#include "OrthoCamera.h"
+
 using namespace RenderingUtilities;
 
 void glfwErrorCallback(int error, const char* description) {
@@ -119,6 +121,55 @@ void MoveCamera(Camera& camera, GLFWwindow* window, float dt, const glm::ivec2& 
     }
 }
 
+void MoveCamera2D(OrthoCamera& camera, GLFWwindow* window, float dt, const glm::ivec2& mousePositionWRTViewport, const glm::ivec2& viewportSize, bool mouseOverViewport) {
+    static bool mouseDown{ false };
+    static bool hasMoved{ false };
+    static glm::ivec2 lastMousePosition{ };
+
+    if (!hasMoved) {
+        lastMousePosition = mousePositionWRTViewport;
+        hasMoved = true;
+    }
+
+    bool positionChange{ false };
+    bool directionChange{ false };
+    const float velocity = camera.speed * dt;
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        positionChange = true;
+        camera.position += camera.upVector * velocity;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        positionChange = true;
+        camera.position -= camera.upVector * velocity;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        positionChange = true;
+        camera.position += camera.rightVector * velocity;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        positionChange = true;
+        camera.position -= camera.rightVector * velocity;
+    }
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+        if (mouseDown == false) {
+            lastMousePosition.x = mousePositionWRTViewport.x;
+            lastMousePosition.y = mousePositionWRTViewport.y;
+        }
+
+        mouseDown = true;
+    }
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE) {
+        mouseDown = false;
+    }
+
+    if (!mouseOverViewport) {
+        hasMoved = false;
+    }
+}
+
 int main() {
     glfwSetErrorCallback(glfwErrorCallback);
 
@@ -176,7 +227,7 @@ int main() {
     };
 
     Camera camera{ };
-    Camera camera2D{ };
+    OrthoCamera camera2D{ };
 
     VertexAttributeObject vao{ };
 
@@ -226,7 +277,13 @@ int main() {
         glm::ivec2 mousePositionWRT3DViewport{ mousePosition.x - viewportOffset3D.x, lastFrame3DViewportSize.y - (viewportOffset3D.y - mousePosition.y) };
         glm::ivec2 mousePositionWRT2DViewport{ mousePosition.x - viewportOffset2D.x, lastFrame2DViewportSize.y - (viewportOffset2D.y - mousePosition.y) };
 
-        MoveCamera(camera, window, static_cast<float>(frameTime.count()), mousePositionWRT3DViewport, lastFrame3DViewportSize, mouseOver3DViewPort);
+        if (mouseOver3DViewPort) {
+            MoveCamera(camera, window, static_cast<float>(frameTime.count()), mousePositionWRT3DViewport, lastFrame3DViewportSize, mouseOver3DViewPort);
+        }
+
+        if (mouseOver2DViewPort) {
+            MoveCamera2D(camera2D, window, static_cast<float>(frameTime.count()), mousePositionWRT3DViewport, lastFrame3DViewportSize, mouseOver3DViewPort);
+        }
 
         {
             TimeScope renderingTimeScope{ &renderTime3D };
@@ -262,8 +319,7 @@ int main() {
             solidShader.Bind();
             solidShader.SetVec3("color", glm::vec3{ 0.0f, 1.0f, 0.0f });
 
-            // TODO orhto
-            glm::mat4 projection = glm::perspective(glm::radians(camera2D.fov), (float)renderTarget2D.GetSize().x / (float)renderTarget2D.GetSize().y, camera2D.nearPlane, camera2D.farPlane);
+            glm::mat4 projection = glm::ortho(camera2D.left, camera2D.right, camera2D.bottom, camera2D.top, camera2D.nearPlane, camera2D.farPlane);
             transform.CalculateMatrix();
             glm::mat4 mvp = projection * camera2D.View() * transform.matrix;
 
