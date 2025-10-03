@@ -28,6 +28,13 @@ Mesh ExtrudeImage(const Image& image) {
     std::vector<glm::vec2> uvs{ };
     std::vector<unsigned int> indices{ };
     unsigned int maxIndex = 0;
+
+    float pixelWidth = (right - left) / image.size.x;
+    float pixelHeight = (bottom - top) / image.size.y;
+
+    float pwh = pixelWidth / 2.0f;
+    float phh = pixelHeight / 2.0f;
+
     for (int i = 0; i < pixels.size(); ++i) {
         bool on = pixels[i].r > 60; // TODO
 
@@ -42,16 +49,38 @@ Mesh ExtrudeImage(const Image& image) {
         float normalizedY = y / (float)image.size.x;
         float yPosition = normalizedY * (bottom - top) + top;
 
-        positions.push_back(glm::vec3{ xPosition, yPosition, 0.0f });
-        positions.push_back(glm::vec3{ xPosition, yPosition, depth });
+        positions.push_back(glm::vec3{ xPosition - pwh, yPosition - phh, 0.0f });
+        positions.push_back(glm::vec3{ xPosition + pwh, yPosition - phh, 0.0f });
+        positions.push_back(glm::vec3{ xPosition - pwh, yPosition + phh, 0.0f });
+        positions.push_back(glm::vec3{ xPosition - pwh, yPosition + phh, 0.0f });
+        positions.push_back(glm::vec3{ xPosition + pwh, yPosition - phh, 0.0f });
+        positions.push_back(glm::vec3{ xPosition + pwh, yPosition + phh, 0.0f });
+
+        //positions.push_back(glm::vec3{ xPosition, yPosition, depth });
 
         uvs.push_back(glm::vec2{ normalizedX, normalizedY });
         uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+
+        //uvs.push_back(glm::vec2{ normalizedX, normalizedY });
 
         indices.push_back(maxIndex);
         ++maxIndex;
         indices.push_back(maxIndex);
         ++maxIndex;
+        indices.push_back(maxIndex);
+        ++maxIndex;
+        indices.push_back(maxIndex);
+        ++maxIndex;
+        indices.push_back(maxIndex);
+        ++maxIndex;
+        indices.push_back(maxIndex);
+        ++maxIndex;
+        //indices.push_back(maxIndex);
+        //++maxIndex;
     }
 
     std::vector<float> vertices{ };
