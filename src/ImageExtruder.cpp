@@ -64,6 +64,26 @@ Mesh ExtrudeImage(const Image& image) {
                 ++endPoint.x;
             }
 
+            while (endPoint.y + 1 < image.size.y) {
+                bool canExtendDown = true;
+                for (int i = startPoint.x; i < endPoint.x + 1; ++i) {
+                    if (pixels[endPoint.y + 1][i].r >= 60) {
+                        canExtendDown = false;
+                        break;
+                    }
+                }
+
+                if (canExtendDown) {
+                    for (int i = startPoint.x; i < endPoint.x + 1; ++i) {
+                        pixels[endPoint.y + 1][i].r = 255;
+                    }
+                    ++endPoint.y;
+                }
+                else {
+                    break;
+                }
+            }
+
             squares.push_back({ startPoint, endPoint });
         }
     }
