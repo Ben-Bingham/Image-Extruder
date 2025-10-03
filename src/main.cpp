@@ -315,7 +315,7 @@ int main() {
     bool mouseOver2DViewPort{ false };
     glm::ivec2 viewportOffset2D{ 0, 0 };
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    bool wireFrame = true;
 
     while (!glfwWindowShouldClose(window)) {
         TimeScope frameTimeScope{ &frameTime };
@@ -335,6 +335,10 @@ int main() {
 
         { // 3D rendering
             TimeScope renderingTimeScope{ &renderTime3D };
+            
+            if (wireFrame) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            }
 
             rendererTarget3D.Bind();
 
@@ -354,6 +358,8 @@ int main() {
             glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, nullptr);
 
             rendererTarget3D.Unbind();
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
         { // 2D rendering
@@ -420,6 +426,11 @@ int main() {
             mouseOver2DViewPort = ImGui::IsItemHovered();
 
             viewportOffset2D = glm::ivec2{ (int)ImGui::GetCursorPos().x, (int)ImGui::GetCursorPos().y };
+        } ImGui::End();
+
+        { ImGui::Begin("Settings");
+            ImGui::Text("Index count: %i", mesh.indices.size());
+            ImGui::Checkbox("Wireframe", &wireFrame);
         } ImGui::End();
 
         ImGui::Render();
