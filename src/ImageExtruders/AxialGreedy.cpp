@@ -1,10 +1,8 @@
-#include "ImageExtruder.h"
-
-#include <iostream>
+#include "AxialGreedy.h"
 
 #include <glm/glm.hpp>
 
-Mesh ExtrudeImage(const Image& image) {
+Mesh AxialGreedy::ExtrudeImage(const Image& image) {
     Mesh mesh{ };
 
     using Pixel = glm::u8vec4;

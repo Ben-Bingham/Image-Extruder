@@ -23,7 +23,7 @@
 #include "OrthoCamera.h"
 #include "Image.h"
 #include "Mesh.h"
-#include "ImageExtruder.h"
+#include "ImageExtruders/AxialGreedy.h"
 
 using namespace RenderingUtilities;
 
@@ -276,7 +276,10 @@ int main() {
     Image image{ "assets\\blackWhite.png" };
     Texture2D imageTexture{ "assets\\blackWhite.png", parameters };
 
-    Mesh mesh = ExtrudeImage(image);
+    std::unique_ptr<ImageExtruder> extruder{ };
+    extruder = std::make_unique<AxialGreedy>();
+
+    Mesh mesh = extruder->ExtrudeImage(image);
 
     std::cout << "Index count: " << mesh.indices.size() << std::endl;
 
