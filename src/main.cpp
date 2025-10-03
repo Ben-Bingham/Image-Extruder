@@ -287,6 +287,8 @@ int main() {
     Transform imageTransform{ };
     imageTransform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
 
+    Texture2D imageTexture{ "assets\\blackWhite.png" };
+
     std::chrono::duration<double> frameTime{ };
     std::chrono::duration<double> renderTime3D{ };
     std::chrono::duration<double> renderTime2D{ };
@@ -296,8 +298,6 @@ int main() {
 
     bool mouseOver2DViewPort{ false };
     glm::ivec2 viewportOffset2D{ 0, 0 };
-
-    Texture2D image{ "assets\\blackWhite.png" };
 
     while (!glfwWindowShouldClose(window)) {
         TimeScope frameTimeScope{ &frameTime };
