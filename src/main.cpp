@@ -312,6 +312,8 @@ int main() {
     bool mouseOver2DViewPort{ false };
     glm::ivec2 viewportOffset2D{ 0, 0 };
 
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     while (!glfwWindowShouldClose(window)) {
         TimeScope frameTimeScope{ &frameTime };
 

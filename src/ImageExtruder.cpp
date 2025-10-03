@@ -48,45 +48,68 @@ Mesh ExtrudeImage(const Image& image) {
     float pwh = pixelWidth / 2.0f;
     float phh = pixelHeight / 2.0f;
 
+    std::vector<std::pair<glm::ivec2, glm::ivec2>> squares;
+
     for (int y = 0; y < image.size.y; ++y) {
         for (int x = 0; x < image.size.x; ++x) {
-            bool on = pixels[y][x].r > 60; // TODO
+            if (pixels[y][x].r >= 60) continue;
 
-            if (!on) continue;
+            glm::ivec2 startPoint{ x, y };
+            glm::ivec2 endPoint{ x, y };
 
-            float normalizedX = x / (float)image.size.x;
-            float xPosition = normalizedX * (right - left) + left;
+            pixels[y][x].r = 255;
 
-            float normalizedY = y / (float)image.size.y;
-            float yPosition = normalizedY * (bottom - top) + top;
+            while (endPoint.x + 1 < image.size.x && pixels[y][endPoint.x + 1].r < 60) {
+                pixels[y][endPoint.x + 1].r = 255;
+                ++endPoint.x;
+            }
 
-            positions.push_back(glm::vec3{ xPosition - pwh, yPosition - phh, 0.0f });
-            positions.push_back(glm::vec3{ xPosition + pwh, yPosition - phh, 0.0f });
-            positions.push_back(glm::vec3{ xPosition - pwh, yPosition + phh, 0.0f });
-            positions.push_back(glm::vec3{ xPosition - pwh, yPosition + phh, 0.0f });
-            positions.push_back(glm::vec3{ xPosition + pwh, yPosition - phh, 0.0f });
-            positions.push_back(glm::vec3{ xPosition + pwh, yPosition + phh, 0.0f });
-
-            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-
-            indices.push_back(maxIndex);
-            ++maxIndex;
-            indices.push_back(maxIndex);
-            ++maxIndex;
-            indices.push_back(maxIndex);
-            ++maxIndex;
-            indices.push_back(maxIndex);
-            ++maxIndex;
-            indices.push_back(maxIndex);
-            ++maxIndex;
-            indices.push_back(maxIndex);
-            ++maxIndex;
+            squares.push_back({ startPoint, endPoint });
         }
+    }
+
+    for (auto& square : squares) {
+        // TL = Top Left
+        // BR = Bottom Right
+
+        float TLnormalizedX = square.first.x / (float)image.size.x;
+        float TLxPosition = TLnormalizedX * (right - left) + left;
+
+        float TLnormalizedY = square.first.y / (float)image.size.y;
+        float TLyPosition = TLnormalizedY * (bottom - top) + top;
+
+        float BRnormalizedX = square.second.x / (float)image.size.x;
+        float BRxPosition = BRnormalizedX * (right - left) + left;
+
+        float BRnormalizedY = square.second.y / (float)image.size.y;
+        float BRyPosition = BRnormalizedY * (bottom - top) + top;
+
+        positions.push_back(glm::vec3{ TLxPosition - pwh, TLyPosition - phh, 0.0f });
+        positions.push_back(glm::vec3{ BRxPosition + pwh, TLyPosition - phh, 0.0f });
+        positions.push_back(glm::vec3{ TLxPosition - pwh, BRyPosition + phh, 0.0f });
+        positions.push_back(glm::vec3{ TLxPosition - pwh, BRyPosition + phh, 0.0f });
+        positions.push_back(glm::vec3{ BRxPosition + pwh, TLyPosition - phh, 0.0f });
+        positions.push_back(glm::vec3{ BRxPosition + pwh, BRyPosition + phh, 0.0f });
+
+        uvs.push_back(glm::vec2{ TLnormalizedX, TLnormalizedY });
+        uvs.push_back(glm::vec2{ BRnormalizedX, TLnormalizedY });
+        uvs.push_back(glm::vec2{ TLnormalizedX, BRnormalizedY });
+        uvs.push_back(glm::vec2{ TLnormalizedX, BRnormalizedY });
+        uvs.push_back(glm::vec2{ BRnormalizedX, TLnormalizedY });
+        uvs.push_back(glm::vec2{ BRnormalizedX, BRnormalizedY });
+
+        indices.push_back(maxIndex);
+        ++maxIndex;
+        indices.push_back(maxIndex);
+        ++maxIndex;
+        indices.push_back(maxIndex);
+        ++maxIndex;
+        indices.push_back(maxIndex);
+        ++maxIndex;
+        indices.push_back(maxIndex);
+        ++maxIndex;
+        indices.push_back(maxIndex);
+        ++maxIndex;
     }
 
     std::vector<float> vertices{ };
