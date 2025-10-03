@@ -176,6 +176,7 @@ int main() {
     };
 
     Camera camera{ };
+    Camera camera2D{ };
 
     VertexAttributeObject vao{ };
 
@@ -206,7 +207,8 @@ int main() {
     transform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
 
     std::chrono::duration<double> frameTime{ };
-    std::chrono::duration<double> renderTime{ };
+    std::chrono::duration<double> renderTime3D{ };
+    std::chrono::duration<double> renderTime2D{ };
 
     bool mouseOver3DViewPort{ false };
     glm::ivec2 viewportOffset3D{ 0, 0 };
@@ -227,7 +229,7 @@ int main() {
         MoveCamera(camera, window, static_cast<float>(frameTime.count()), mousePositionWRT3DViewport, lastFrame3DViewportSize, mouseOver3DViewPort);
 
         {
-            TimeScope renderingTimeScope{ &renderTime };
+            TimeScope renderingTimeScope{ &renderTime3D };
 
             rendererTarget3D.Bind();
 
@@ -247,6 +249,30 @@ int main() {
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 
             rendererTarget3D.Unbind();
+        }
+
+        {
+            TimeScope renderingTimeScope{ &renderTime2D };
+
+            renderTarget2D.Bind();
+
+            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            solidShader.Bind();
+            solidShader.SetVec3("color", glm::vec3{ 0.0f, 1.0f, 0.0f });
+
+            // TODO orhto
+            glm::mat4 projection = glm::perspective(glm::radians(camera2D.fov), (float)renderTarget2D.GetSize().x / (float)renderTarget2D.GetSize().y, camera2D.nearPlane, camera2D.farPlane);
+            transform.CalculateMatrix();
+            glm::mat4 mvp = projection * camera2D.View() * transform.matrix;
+
+            solidShader.SetMat4("mvp", mvp);
+
+            vao.Bind();
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+
+            renderTarget2D.Unbind();
         }
 
         ImGui_ImplOpenGL3_NewFrame();
