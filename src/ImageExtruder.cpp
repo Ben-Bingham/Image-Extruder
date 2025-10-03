@@ -10,11 +10,9 @@ Mesh ExtrudeImage(const Image& image) {
     using Pixel = glm::u8vec4;
 
     std::vector<std::vector<Pixel>> pixels{ };
-    //pixels.resize(image.size.x);
 
     for (int y = 0; y < image.size.y; ++y) {
         pixels.push_back(std::vector<Pixel>{ });
-        //std::cout << "Row: " << std::endl;
 
         for (int x = 0; x < image.size.x * 4; x += 4) {
             glm::u8vec4 pixel{ };
@@ -28,26 +26,9 @@ Mesh ExtrudeImage(const Image& image) {
             pixel.b = image.data[b];
             pixel.a = image.data[a];
 
-            //std::cout << (int)pixel.r << ", " << (int)pixel.g << ", " << (int)pixel.b << ", " << (int)pixel.a << std::endl;
-
             pixels.back().push_back(pixel);
         }
     }
-
-    //for (int x = 0; x < image.size.x; ++x) {
-    //    for (int y = 0; y < image.size.y * 4; y += 4) {
-    //        glm::u8vec4 pixel{ };
-    //        pixel.r = image.data[y * image.size.x + x + 0];
-    //        pixel.g = image.data[y * image.size.x + x + 1];
-    //        pixel.b = image.data[y * image.size.x + x + 2];
-    //        pixel.a = image.data[y * image.size.x + x + 3];
-
-    //        pixels[x].push_back(pixel);
-    //    }
-    //}
-
-    std::cout << "pixels width: " << pixels[0].size() << std::endl;
-    std::cout << "pixels height: " << pixels.size() << std::endl;
 
     float left = 0.0f;
     float right = 10.0f;
