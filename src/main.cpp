@@ -20,6 +20,8 @@
 #include <utility/TimeScope.h>
 #include <utility/Transform.h>
 
+#include "Image.h"
+
 using namespace RenderingUtilities;
 
 void glfwErrorCallback(int error, const char* description) {
@@ -209,6 +211,8 @@ int main() {
     bool mouseOverViewPort{ false };
     glm::ivec2 viewportOffset{ 0, 0 };
 
+    Image image{ "assets\\blackWhite.png" };
+
     while (!glfwWindowShouldClose(window)) {
         TimeScope frameTimeScope{ &frameTime };
 
@@ -256,7 +260,7 @@ int main() {
 
         glm::ivec2 newViewportSize{ };
 
-        { ImGui::Begin("Viewport");
+        { ImGui::Begin("3D-Viewport");
             // Needs to be the first call after "Begin"
             newViewportSize = glm::ivec2{ ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
@@ -268,6 +272,10 @@ int main() {
             viewportOffset = glm::ivec2{ (int)ImGui::GetCursorPos().x, (int)ImGui::GetCursorPos().y };
 
         } ImGui::End(); // Viewport
+
+        { ImGui::Begin("2D-Viewport");
+            
+        } ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
