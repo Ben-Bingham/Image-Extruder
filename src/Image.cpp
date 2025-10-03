@@ -3,9 +3,12 @@
 #include <iostream>
 
 Image::Image(const std::string& path, bool flip) {
-    int nrChannels;
+    int x, y, nrChannels;
     stbi_set_flip_vertically_on_load(flip);
-    unsigned char* d = stbi_load(path.c_str(), &size.x, &size.y, &nrChannels, 4);
+    unsigned char* d = stbi_load(path.c_str(), &x, &y, &nrChannels, 4);
+
+    size.x = x;
+    size.y = y;
 
     data.resize(4 * size.x * size.y * sizeof(unsigned char));
 

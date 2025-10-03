@@ -1,5 +1,7 @@
 #include "ImageExtruder.h"
 
+#include <iostream>
+
 #include <glm/glm.hpp>
 
 Mesh ExtrudeImage(const Image& image) {
@@ -7,15 +9,45 @@ Mesh ExtrudeImage(const Image& image) {
 
     using Pixel = glm::u8vec4;
 
-    std::vector<Pixel> pixels{ };
-    pixels.resize(image.size.x * image.size.y);
+    std::vector<std::vector<Pixel>> pixels{ };
+    //pixels.resize(image.size.x);
 
-    for (int i = 0; i < image.size.x * image.size.y; i += 4) {
-        pixels[i].r = image.data[i + 0];
-        pixels[i].g = image.data[i + 1];
-        pixels[i].b = image.data[i + 2];
-        pixels[i].a = image.data[i + 3];
+    for (int y = 0; y < image.size.y; ++y) {
+        pixels.push_back(std::vector<Pixel>{ });
+        //std::cout << "Row: " << std::endl;
+
+        for (int x = 0; x < image.size.x * 4; x += 4) {
+            glm::u8vec4 pixel{ };
+            int r = y * (image.size.x * 4) + x + 0;
+            int g = y * (image.size.x * 4) + x + 1;
+            int b = y * (image.size.x * 4) + x + 2;
+            int a = y * (image.size.x * 4) + x + 3;
+
+            pixel.r = image.data[r];
+            pixel.g = image.data[g];
+            pixel.b = image.data[b];
+            pixel.a = image.data[a];
+
+            //std::cout << (int)pixel.r << ", " << (int)pixel.g << ", " << (int)pixel.b << ", " << (int)pixel.a << std::endl;
+
+            pixels.back().push_back(pixel);
+        }
     }
+
+    //for (int x = 0; x < image.size.x; ++x) {
+    //    for (int y = 0; y < image.size.y * 4; y += 4) {
+    //        glm::u8vec4 pixel{ };
+    //        pixel.r = image.data[y * image.size.x + x + 0];
+    //        pixel.g = image.data[y * image.size.x + x + 1];
+    //        pixel.b = image.data[y * image.size.x + x + 2];
+    //        pixel.a = image.data[y * image.size.x + x + 3];
+
+    //        pixels[x].push_back(pixel);
+    //    }
+    //}
+
+    std::cout << "pixels width: " << pixels[0].size() << std::endl;
+    std::cout << "pixels height: " << pixels.size() << std::endl;
 
     float left = 0.0f;
     float right = 10.0f;
@@ -32,55 +64,51 @@ Mesh ExtrudeImage(const Image& image) {
     float pixelWidth = (right - left) / image.size.x;
     float pixelHeight = (bottom - top) / image.size.y;
 
+    std::cout << "width: " << pixelWidth << std::endl;
+    std::cout << "height: " << pixelHeight << std::endl;
+
     float pwh = pixelWidth / 2.0f;
     float phh = pixelHeight / 2.0f;
 
-    for (int i = 0; i < pixels.size(); ++i) {
-        bool on = pixels[i].r > 60; // TODO
+    for (int y = 0; y < image.size.y; ++y) {
+        for (int x = 0; x < image.size.x; ++x) {
+            bool on = pixels[y][x].r > 60; // TODO
 
-        if (!on) continue;
+            if (!on) continue;
 
-        float x = std::floor((float)i / (float)image.size.x);
-        float y = i % image.size.y;
+            float normalizedX = x / (float)image.size.x;
+            float xPosition = normalizedX * (right - left) + left;
 
-        float normalizedX = x / (float)image.size.y;
-        float xPosition = normalizedX * (right - left) + left;
+            float normalizedY = y / (float)image.size.y;
+            float yPosition = normalizedY * (bottom - top) + top;
 
-        float normalizedY = y / (float)image.size.x;
-        float yPosition = normalizedY * (bottom - top) + top;
+            positions.push_back(glm::vec3{ xPosition - pwh, yPosition - phh, 0.0f });
+            positions.push_back(glm::vec3{ xPosition + pwh, yPosition - phh, 0.0f });
+            positions.push_back(glm::vec3{ xPosition - pwh, yPosition + phh, 0.0f });
+            positions.push_back(glm::vec3{ xPosition - pwh, yPosition + phh, 0.0f });
+            positions.push_back(glm::vec3{ xPosition + pwh, yPosition - phh, 0.0f });
+            positions.push_back(glm::vec3{ xPosition + pwh, yPosition + phh, 0.0f });
 
-        positions.push_back(glm::vec3{ xPosition - pwh, yPosition - phh, 0.0f });
-        positions.push_back(glm::vec3{ xPosition + pwh, yPosition - phh, 0.0f });
-        positions.push_back(glm::vec3{ xPosition - pwh, yPosition + phh, 0.0f });
-        positions.push_back(glm::vec3{ xPosition - pwh, yPosition + phh, 0.0f });
-        positions.push_back(glm::vec3{ xPosition + pwh, yPosition - phh, 0.0f });
-        positions.push_back(glm::vec3{ xPosition + pwh, yPosition + phh, 0.0f });
+            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
+            uvs.push_back(glm::vec2{ normalizedX, normalizedY });
 
-        //positions.push_back(glm::vec3{ xPosition, yPosition, depth });
-
-        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-        uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-
-        //uvs.push_back(glm::vec2{ normalizedX, normalizedY });
-
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        //indices.push_back(maxIndex);
-        //++maxIndex;
+            indices.push_back(maxIndex);
+            ++maxIndex;
+            indices.push_back(maxIndex);
+            ++maxIndex;
+            indices.push_back(maxIndex);
+            ++maxIndex;
+            indices.push_back(maxIndex);
+            ++maxIndex;
+            indices.push_back(maxIndex);
+            ++maxIndex;
+            indices.push_back(maxIndex);
+            ++maxIndex;
+        }
     }
 
     std::vector<float> vertices{ };

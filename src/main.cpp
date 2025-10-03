@@ -269,8 +269,12 @@ int main() {
     imageTransform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
     imageTransform.scale *= 10.0f;
 
-    Texture2D imageTexture{ "assets\\blackWhite.png" };
+    TextureParameters parameters{ };
+    parameters.magFilter = TextureFilteringMode::NEAREST;
+    parameters.minFilter = TextureFilteringMode::NEAREST;
+
     Image image{ "assets\\blackWhite.png" };
+    Texture2D imageTexture{ "assets\\blackWhite.png", parameters };
 
     Mesh mesh = ExtrudeImage(image);
 
