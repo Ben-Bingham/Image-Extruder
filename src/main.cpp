@@ -226,6 +226,11 @@ int main() {
         "assets\\shaders\\solid.frag"
     };
 
+    Shader imageShader{
+        "assets\\shaders\\texture.vert",
+        "assets\\shaders\\texture.frag"
+    };
+
     Camera camera{ };
     OrthoCamera camera2D{ };
 
@@ -284,8 +289,10 @@ int main() {
     imageVBO.Unbind();
     imageEBO.Unbind();
 
+    // TODO image aspect ratio
     Transform imageTransform{ };
     imageTransform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
+    imageTransform.scale *= 10.0f;
 
     Texture2D imageTexture{ "assets\\blackWhite.png" };
 
@@ -315,7 +322,7 @@ int main() {
             MoveCamera2D(camera2D, window, static_cast<float>(frameTime.count()), mousePositionWRT3DViewport, lastFrame3DViewportSize, mouseOver3DViewPort);
         }
 
-        {
+        { // 3D rendering
             TimeScope renderingTimeScope{ &renderTime3D };
 
             rendererTarget3D.Bind();
@@ -338,7 +345,7 @@ int main() {
             rendererTarget3D.Unbind();
         }
 
-        {
+        { // 2D rendering
             TimeScope renderingTimeScope{ &renderTime2D };
 
             renderTarget2D.Bind();
@@ -346,14 +353,17 @@ int main() {
             glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            solidShader.Bind();
-            solidShader.SetVec3("color", glm::vec3{ 0.0f, 1.0f, 0.0f });
+            imageShader.Bind();
+            glActiveTexture(GL_TEXTURE0);
+            imageTexture.Bind();
+
+            imageShader.SetInt("image", 0);
 
             glm::mat4 projection = glm::ortho(camera2D.left, camera2D.right, camera2D.bottom, camera2D.top, camera2D.nearPlane, camera2D.farPlane);
-            transform.CalculateMatrix();
-            glm::mat4 mvp = projection * camera2D.View() * transform.matrix;
+            imageTransform.CalculateMatrix();
+            glm::mat4 mvp = projection * camera2D.View() * imageTransform.matrix;
 
-            solidShader.SetMat4("mvp", mvp);
+            imageShader.SetMat4("mvp", mvp);
 
             imageVAO.Bind();
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
