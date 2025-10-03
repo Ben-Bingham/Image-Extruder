@@ -257,6 +257,36 @@ int main() {
     Transform transform{ };
     transform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
 
+    VertexAttributeObject imageVAO{ };
+
+    VertexBufferObject imageVBO{ std::vector<float>{
+        -0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f,       0.0f, 0.0f,
+        -0.5f,  0.5f, 0.0f,      0.0f, 0.0f, 1.0f,       0.0f, 1.0f,
+         0.5f,  0.5f, 0.0f,      0.0f, 0.0f, 1.0f,       1.0f, 1.0f,
+         0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f,       1.0f, 0.0f
+    } };
+
+    ElementBufferObject imageEBO{ std::vector<unsigned int>{
+        2, 1, 0,
+        3, 2, 0
+    } };
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    imageVAO.Unbind();
+    imageVBO.Unbind();
+    imageEBO.Unbind();
+
+    Transform imageTransform{ };
+    imageTransform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
+
     std::chrono::duration<double> frameTime{ };
     std::chrono::duration<double> renderTime3D{ };
     std::chrono::duration<double> renderTime2D{ };
@@ -325,8 +355,8 @@ int main() {
 
             solidShader.SetMat4("mvp", mvp);
 
-            vao.Bind();
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+            imageVAO.Bind();
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
             renderTarget2D.Unbind();
         }
