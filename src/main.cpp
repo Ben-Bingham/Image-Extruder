@@ -21,6 +21,9 @@
 #include <utility/Transform.h>
 
 #include "OrthoCamera.h"
+#include "Image.h"
+#include "Mesh.h"
+#include "ImageExtruder.h"
 
 using namespace RenderingUtilities;
 
@@ -234,34 +237,6 @@ int main() {
     Camera camera{ };
     OrthoCamera camera2D{ };
 
-    VertexAttributeObject vao{ };
-
-    VertexBufferObject vbo{ std::vector<float>{
-        -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
-         0.0f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.5f,
-         0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     1.0f, 0.0f
-    } };
-
-    ElementBufferObject ebo{ std::vector<unsigned int>{
-        2, 1, 0
-    } };
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    vao.Unbind();
-    vbo.Unbind();
-    ebo.Unbind();
-
-    Transform transform{ };
-    transform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
-
     VertexAttributeObject imageVAO{ };
 
     VertexBufferObject imageVBO{ std::vector<float>{
@@ -295,6 +270,31 @@ int main() {
     imageTransform.scale *= 10.0f;
 
     Texture2D imageTexture{ "assets\\blackWhite.png" };
+    Image image{ "assets\\blackWhite.png" };
+
+    Mesh mesh = ExtrudeImage(image);
+
+    VertexAttributeObject VAO3D{ };
+
+    VertexBufferObject VBO3D{ mesh.vertices };
+
+    ElementBufferObject EBO3D{ mesh.indices };
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    VAO3D.Unbind();
+    VBO3D.Unbind();
+    EBO3D.Unbind();
+
+    Transform transform{ };
+    transform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
 
     std::chrono::duration<double> frameTime{ };
     std::chrono::duration<double> renderTime3D{ };
@@ -339,7 +339,7 @@ int main() {
 
             solidShader.SetMat4("mvp", mvp);
 
-            vao.Bind();
+            VAO3D.Bind();
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 
             rendererTarget3D.Unbind();
