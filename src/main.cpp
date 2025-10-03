@@ -20,8 +20,6 @@
 #include <utility/TimeScope.h>
 #include <utility/Transform.h>
 
-#include "Image.h"
-
 using namespace RenderingUtilities;
 
 void glfwErrorCallback(int error, const char* description) {
@@ -166,9 +164,11 @@ int main() {
     ImGui_ImplOpenGL3_Init();
 
     glm::ivec2 defaultFramebufferSize{ 800, 600 };
-    glm::ivec2 lastFrameViewportSize{ defaultFramebufferSize };
+    glm::ivec2 lastFrame3DViewportSize{ defaultFramebufferSize };
+    glm::ivec2 lastFrame2DViewportSize{ defaultFramebufferSize };
 
-    RenderTarget rendererTarget{ defaultFramebufferSize };
+    RenderTarget rendererTarget3D{ defaultFramebufferSize };
+    RenderTarget renderTarget2D{ defaultFramebufferSize };
 
     Shader solidShader{
         "assets\\shaders\\solid.vert",
@@ -208,24 +208,28 @@ int main() {
     std::chrono::duration<double> frameTime{ };
     std::chrono::duration<double> renderTime{ };
 
-    bool mouseOverViewPort{ false };
-    glm::ivec2 viewportOffset{ 0, 0 };
+    bool mouseOver3DViewPort{ false };
+    glm::ivec2 viewportOffset3D{ 0, 0 };
 
-    Image image{ "assets\\blackWhite.png" };
+    bool mouseOver2DViewPort{ false };
+    glm::ivec2 viewportOffset2D{ 0, 0 };
+
+    Texture2D image{ "assets\\blackWhite.png" };
 
     while (!glfwWindowShouldClose(window)) {
         TimeScope frameTimeScope{ &frameTime };
 
         glfwPollEvents();
 
-        glm::ivec2 mousePositionWRTViewport{ mousePosition.x - viewportOffset.x, lastFrameViewportSize.y - (viewportOffset.y - mousePosition.y) };
+        glm::ivec2 mousePositionWRT3DViewport{ mousePosition.x - viewportOffset3D.x, lastFrame3DViewportSize.y - (viewportOffset3D.y - mousePosition.y) };
+        glm::ivec2 mousePositionWRT2DViewport{ mousePosition.x - viewportOffset2D.x, lastFrame2DViewportSize.y - (viewportOffset2D.y - mousePosition.y) };
 
-        MoveCamera(camera, window, static_cast<float>(frameTime.count()), mousePositionWRTViewport, lastFrameViewportSize, mouseOverViewPort);
+        MoveCamera(camera, window, static_cast<float>(frameTime.count()), mousePositionWRT3DViewport, lastFrame3DViewportSize, mouseOver3DViewPort);
 
         {
             TimeScope renderingTimeScope{ &renderTime };
 
-            rendererTarget.Bind();
+            rendererTarget3D.Bind();
 
             glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -233,7 +237,7 @@ int main() {
             solidShader.Bind();
             solidShader.SetVec3("color", glm::vec3{ 1.0f, 0.0f, 0.0f });
 
-            glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)rendererTarget.GetSize().x / (float)rendererTarget.GetSize().y, camera.nearPlane, camera.farPlane);
+            glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)rendererTarget3D.GetSize().x / (float)rendererTarget3D.GetSize().y, camera.nearPlane, camera.farPlane);
             transform.CalculateMatrix();
             glm::mat4 mvp = projection * camera.View() * transform.matrix;
 
@@ -242,7 +246,7 @@ int main() {
             vao.Bind();
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 
-            rendererTarget.Unbind();
+            rendererTarget3D.Unbind();
         }
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -258,23 +262,31 @@ int main() {
         size_t changedPointLightIndex{ 0 };
         bool pointLightChanged{ false };
 
-        glm::ivec2 newViewportSize{ };
+        glm::ivec2 new3DViewportSize{ };
 
         { ImGui::Begin("3D-Viewport");
             // Needs to be the first call after "Begin"
-            newViewportSize = glm::ivec2{ ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+            new3DViewportSize = glm::ivec2{ ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
             // Display the frame with the last frames viewport size (The same size it was rendered with)
-            ImGui::Image((ImTextureID)rendererTarget.GetTexture().Get(), ImVec2{ (float)lastFrameViewportSize.x, (float)lastFrameViewportSize.y }, ImVec2{ 0.0f, 1.0f }, ImVec2{ 1.0f, 0.0f });
+            ImGui::Image((ImTextureID)rendererTarget3D.GetTexture().Get(), ImVec2{ (float)lastFrame3DViewportSize.x, (float)lastFrame3DViewportSize.y }, ImVec2{ 0.0f, 1.0f }, ImVec2{ 1.0f, 0.0f });
 
-            mouseOverViewPort = ImGui::IsItemHovered();
+            mouseOver3DViewPort = ImGui::IsItemHovered();
 
-            viewportOffset = glm::ivec2{ (int)ImGui::GetCursorPos().x, (int)ImGui::GetCursorPos().y };
+            viewportOffset3D = glm::ivec2{ (int)ImGui::GetCursorPos().x, (int)ImGui::GetCursorPos().y };
 
         } ImGui::End(); // Viewport
 
+        glm::ivec2 new2DViewportSize{ };
+
         { ImGui::Begin("2D-Viewport");
-            
+            new2DViewportSize = glm::ivec2{ ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+
+            ImGui::Image((ImTextureID)renderTarget2D.GetTexture().Get(), ImVec2{(float)lastFrame2DViewportSize.x, (float)lastFrame2DViewportSize.y}, ImVec2{0.0f, 1.0f}, ImVec2{1.0f, 0.0f});
+        
+            mouseOver2DViewPort = ImGui::IsItemHovered();
+
+            viewportOffset2D = glm::ivec2{ (int)ImGui::GetCursorPos().x, (int)ImGui::GetCursorPos().y };
         } ImGui::End();
 
         ImGui::Render();
@@ -290,11 +302,16 @@ int main() {
         }
 
         // After ImGui has rendered its frame, we resize the framebuffer if needed for next frame
-        if (newViewportSize != lastFrameViewportSize) {
-            rendererTarget.Resize(newViewportSize);
+        if (new3DViewportSize != lastFrame3DViewportSize) {
+            rendererTarget3D.Resize(new3DViewportSize);
         }
 
-        lastFrameViewportSize = newViewportSize;
+        if (new2DViewportSize != lastFrame2DViewportSize) {
+            renderTarget2D.Resize(new2DViewportSize);
+        }
+
+        lastFrame3DViewportSize = new3DViewportSize;
+        lastFrame2DViewportSize = new2DViewportSize;
 
         glfwSwapBuffers(window);
     }
