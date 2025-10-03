@@ -45,9 +45,6 @@ Mesh ExtrudeImage(const Image& image) {
     float pixelWidth = (right - left) / image.size.x;
     float pixelHeight = (bottom - top) / image.size.y;
 
-    std::cout << "width: " << pixelWidth << std::endl;
-    std::cout << "height: " << pixelHeight << std::endl;
-
     float pwh = pixelWidth / 2.0f;
     float phh = pixelHeight / 2.0f;
 
