@@ -24,6 +24,7 @@
 #include "Image.h"
 #include "Mesh.h"
 #include "ImageExtruders/AxialGreedy.h"
+#include "ImageExtruders/RandomGreedy.h"
 
 using namespace RenderingUtilities;
 
@@ -277,7 +278,7 @@ int main() {
     Texture2D imageTexture{ "assets\\blackWhite.png", parameters };
 
     std::unique_ptr<ImageExtruder> extruder{ };
-    extruder = std::make_unique<AxialGreedy>();
+    extruder = std::make_unique<RandomGreedy>();
 
     Mesh mesh = extruder->ExtrudeImage(image);
 
