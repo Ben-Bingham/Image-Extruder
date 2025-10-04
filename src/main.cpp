@@ -25,6 +25,7 @@
 #include "Mesh.h"
 #include "ImageExtruders/AxialGreedy.h"
 #include "ImageExtruders/RandomGreedy.h"
+#include "ImageExtruders/SmoothSides.h"
 
 using namespace RenderingUtilities;
 
@@ -278,11 +279,9 @@ int main() {
     Texture2D imageTexture{ "assets\\blackWhite.png", parameters };
 
     std::unique_ptr<ImageExtruder> extruder{ };
-    extruder = std::make_unique<RandomGreedy>();
+    extruder = std::make_unique<SmoothSides>();
 
     Mesh mesh = extruder->ExtrudeImage(image);
-
-    std::cout << "Index count: " << mesh.indices.size() << std::endl;
 
     VertexAttributeObject VAO3D{ };
 
