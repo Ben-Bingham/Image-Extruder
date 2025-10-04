@@ -275,8 +275,8 @@ int main() {
     parameters.magFilter = TextureFilteringMode::NEAREST;
     parameters.minFilter = TextureFilteringMode::NEAREST;
 
-    Image image{ "assets\\blackWhite.png" };
-    Texture2D imageTexture{ "assets\\blackWhite.png", parameters };
+    Image image{ "assets\\blackWhiteSmall.png" };
+    Texture2D imageTexture{ "assets\\blackWhiteSmall.png", parameters };
 
     std::unique_ptr<ImageExtruder> extruder{ };
     extruder = std::make_unique<SmoothSides>();
