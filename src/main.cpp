@@ -26,6 +26,7 @@
 #include "ImageExtruders/AxialGreedy.h"
 #include "ImageExtruders/RandomGreedy.h"
 #include "ImageExtruders/SmoothSides.h"
+#include "ImageExtruders/MarchingSquares.h"
 
 using namespace RenderingUtilities;
 
@@ -279,7 +280,7 @@ int main() {
     Texture2D imageTexture{ "assets\\blackWhiteSmall.png", parameters };
 
     std::unique_ptr<ImageExtruder> extruder{ };
-    extruder = std::make_unique<SmoothSides>();
+    extruder = std::make_unique<MarchingSquares>();
 
     Mesh mesh = extruder->ExtrudeImage(image);
 
