@@ -54,7 +54,6 @@ Mesh MarchingSquares::ExtrudeImage(const Image& image) {
     std::vector<std::pair<glm::ivec2, glm::ivec2>> squares;
 
     for (int x = 0; x < image.size.x; ++x) {
-        //std::cout << "done x" << std::endl;
         for (int y = 0; y < image.size.y; ++y) {
             if (!pixels[y][x]) continue;
 
