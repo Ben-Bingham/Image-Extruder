@@ -102,10 +102,10 @@ Mesh AxialGreedy::ExtrudeImage(const Image& image) {
         float BRnormalizedY = square.second.y / (float)image.size.y;
         float BRyPosition = BRnormalizedY * (bottom - top) + top;
 
-        positions.push_back(glm::vec3{ TLxPosition - pwh, TLyPosition - phh, 0.0f }); // Top Left
-        positions.push_back(glm::vec3{ BRxPosition + pwh, TLyPosition - phh, 0.0f }); // Top Right
-        positions.push_back(glm::vec3{ TLxPosition - pwh, BRyPosition + phh, 0.0f }); // Bottom Left
-        positions.push_back(glm::vec3{ BRxPosition + pwh, BRyPosition + phh, 0.0f }); // Bottom Right
+        positions.push_back(glm::vec3{ TLxPosition - pwh, TLyPosition - phh, 0.0f }); // L1 Top Left
+        positions.push_back(glm::vec3{ BRxPosition + pwh, TLyPosition - phh, 0.0f }); // L1 Top Right
+        positions.push_back(glm::vec3{ TLxPosition - pwh, BRyPosition + phh, 0.0f }); // L1 Bottom Left
+        positions.push_back(glm::vec3{ BRxPosition + pwh, BRyPosition + phh, 0.0f }); // L1 Bottom Right
 
         uvs.push_back(glm::vec2{ TLnormalizedX, TLnormalizedY });
         uvs.push_back(glm::vec2{ BRnormalizedX, TLnormalizedY });
@@ -119,7 +119,56 @@ Mesh AxialGreedy::ExtrudeImage(const Image& image) {
         indices.push_back(maxIndex + 3);
         indices.push_back(maxIndex + 2);
 
-        maxIndex += 4;
+        positions.push_back(glm::vec3{ TLxPosition - pwh, TLyPosition - phh, depth }); // L2 Top Left
+        positions.push_back(glm::vec3{ BRxPosition + pwh, TLyPosition - phh, depth }); // L2 Top Right
+        positions.push_back(glm::vec3{ TLxPosition - pwh, BRyPosition + phh, depth }); // L2 Bottom Left
+        positions.push_back(glm::vec3{ BRxPosition + pwh, BRyPosition + phh, depth }); // L2 Bottom Right
+
+        uvs.push_back(glm::vec2{ TLnormalizedX, TLnormalizedY });
+        uvs.push_back(glm::vec2{ BRnormalizedX, TLnormalizedY });
+        uvs.push_back(glm::vec2{ TLnormalizedX, BRnormalizedY });
+        uvs.push_back(glm::vec2{ BRnormalizedX, BRnormalizedY });
+
+        indices.push_back(maxIndex + 4);
+        indices.push_back(maxIndex + 5);
+        indices.push_back(maxIndex + 6);
+        indices.push_back(maxIndex + 5);
+        indices.push_back(maxIndex + 7);
+        indices.push_back(maxIndex + 6);
+
+        // Left Connecting Wall
+        indices.push_back(maxIndex + 0);
+        indices.push_back(maxIndex + 4);
+        indices.push_back(maxIndex + 2);
+        indices.push_back(maxIndex + 2);
+        indices.push_back(maxIndex + 4);
+        indices.push_back(maxIndex + 6);
+
+        // Right Connecting Wall
+        indices.push_back(maxIndex + 1);
+        indices.push_back(maxIndex + 5);
+        indices.push_back(maxIndex + 3);
+        indices.push_back(maxIndex + 3);
+        indices.push_back(maxIndex + 5);
+        indices.push_back(maxIndex + 7);
+
+        // Top Connecting Wall
+        indices.push_back(maxIndex + 0);
+        indices.push_back(maxIndex + 4);
+        indices.push_back(maxIndex + 5);
+        indices.push_back(maxIndex + 1);
+        indices.push_back(maxIndex + 5);
+        indices.push_back(maxIndex + 0);
+
+        // Bottom Connecting Wall
+        indices.push_back(maxIndex + 2);
+        indices.push_back(maxIndex + 6);
+        indices.push_back(maxIndex + 7);
+        indices.push_back(maxIndex + 3);
+        indices.push_back(maxIndex + 7);
+        indices.push_back(maxIndex + 2);
+
+        maxIndex += 8;
     }
 
     std::vector<float> vertices{ };
