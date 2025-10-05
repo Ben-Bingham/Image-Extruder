@@ -23,6 +23,8 @@
 #include "OrthoCamera.h"
 #include "Image.h"
 #include "Mesh.h"
+#include "ExportObj.h"
+
 #include "ImageExtruders/AxialGreedy.h"
 #include "ImageExtruders/RandomGreedy.h"
 #include "ImageExtruders/SmoothSides.h"
@@ -444,6 +446,10 @@ int main() {
                 VAO3D.Unbind();
                 VBO3D.Unbind();
                 EBO3D.Unbind();
+            }
+
+            if (ImGui::Button("Export")) {
+                ExportObj("out.obj", mesh);
             }
         } ImGui::End();
 
