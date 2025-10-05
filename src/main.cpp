@@ -280,7 +280,7 @@ int main() {
     Texture2D imageTexture{ "assets\\blackWhiteSmall.png", parameters };
 
     std::unique_ptr<ImageExtruder> extruder{ };
-    extruder = std::make_unique<MarchingSquares>();
+    extruder = std::make_unique<AxialGreedy>();
 
     Mesh mesh = extruder->ExtrudeImage(image);
 
