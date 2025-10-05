@@ -316,7 +316,7 @@ int main() {
     bool mouseOver2DViewPort{ false };
     glm::ivec2 viewportOffset2D{ 0, 0 };
 
-    bool wireFrame = true;
+    bool wireFrame = false;
 
     while (!glfwWindowShouldClose(window)) {
         TimeScope frameTimeScope{ &frameTime };
@@ -432,6 +432,19 @@ int main() {
         { ImGui::Begin("Settings");
             ImGui::Text("Index count: %i", mesh.indices.size());
             ImGui::Checkbox("Wireframe", &wireFrame);
+
+            if (ImGui::Button("Re-Extrude")) {
+                Mesh mesh = extruder->ExtrudeImage(image);
+
+                VAO3D.Bind();
+
+                VBO3D.UpdateData(mesh.vertices);
+                EBO3D.UpdateData(mesh.indices);
+
+                VAO3D.Unbind();
+                VBO3D.Unbind();
+                EBO3D.Unbind();
+            }
         } ImGui::End();
 
         ImGui::Render();
