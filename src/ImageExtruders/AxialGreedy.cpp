@@ -102,45 +102,37 @@ Mesh AxialGreedy::ExtrudeImage(const Image& image) {
         float BRnormalizedY = square.second.y / (float)image.size.y;
         float BRyPosition = BRnormalizedY * (bottom - top) + top;
 
-        positions.push_back(glm::vec3{ TLxPosition - pwh, TLyPosition - phh, 0.0f });
-        positions.push_back(glm::vec3{ BRxPosition + pwh, TLyPosition - phh, 0.0f });
-        positions.push_back(glm::vec3{ TLxPosition - pwh, BRyPosition + phh, 0.0f });
-        positions.push_back(glm::vec3{ TLxPosition - pwh, BRyPosition + phh, 0.0f });
-        positions.push_back(glm::vec3{ BRxPosition + pwh, TLyPosition - phh, 0.0f });
-        positions.push_back(glm::vec3{ BRxPosition + pwh, BRyPosition + phh, 0.0f });
+        positions.push_back(glm::vec3{ TLxPosition - pwh, TLyPosition - phh, 0.0f }); // Top Left
+        positions.push_back(glm::vec3{ BRxPosition + pwh, TLyPosition - phh, 0.0f }); // Top Right
+        positions.push_back(glm::vec3{ TLxPosition - pwh, BRyPosition + phh, 0.0f }); // Bottom Left
+        positions.push_back(glm::vec3{ BRxPosition + pwh, BRyPosition + phh, 0.0f }); // Bottom Right
 
         uvs.push_back(glm::vec2{ TLnormalizedX, TLnormalizedY });
         uvs.push_back(glm::vec2{ BRnormalizedX, TLnormalizedY });
         uvs.push_back(glm::vec2{ TLnormalizedX, BRnormalizedY });
-        uvs.push_back(glm::vec2{ TLnormalizedX, BRnormalizedY });
-        uvs.push_back(glm::vec2{ BRnormalizedX, TLnormalizedY });
         uvs.push_back(glm::vec2{ BRnormalizedX, BRnormalizedY });
 
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
-        indices.push_back(maxIndex);
-        ++maxIndex;
+        indices.push_back(maxIndex + 0);
+        indices.push_back(maxIndex + 1);
+        indices.push_back(maxIndex + 2);
+        indices.push_back(maxIndex + 1);
+        indices.push_back(maxIndex + 3);
+        indices.push_back(maxIndex + 2);
+
+        maxIndex += 4;
     }
 
     std::vector<float> vertices{ };
     vertices.reserve(indices.size() * 7);
 
-    for (int i = 0; i < indices.size(); ++i) {
+    for (int i = 0; i < positions.size(); ++i) {
         vertices.push_back(positions[i].x);
         vertices.push_back(positions[i].y);
         vertices.push_back(positions[i].z);
 
         vertices.push_back(0.0f);
-        vertices.push_back(1.0f);
         vertices.push_back(0.0f);
+        vertices.push_back(-1.0f);
 
         vertices.push_back(uvs[i].x);
         vertices.push_back(uvs[i].y);
