@@ -31,7 +31,7 @@ Mesh AxialGreedy::ExtrudeImage(const Image& image) {
     float left = 0.0f;
     float right = 10.0f;
     float top = 0.0f;
-    float bottom = 10.0f;
+    float bottom = (10.0f * (float)image.size.y) / (float)image.size.x;
 
     float depth = 1.0f;
 

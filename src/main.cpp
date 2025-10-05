@@ -269,17 +269,17 @@ int main() {
     imageVBO.Unbind();
     imageEBO.Unbind();
 
-    // TODO image aspect ratio
-    Transform imageTransform{ };
-    imageTransform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
-    imageTransform.scale *= 10.0f;
-
     TextureParameters parameters{ };
     parameters.magFilter = TextureFilteringMode::NEAREST;
     parameters.minFilter = TextureFilteringMode::NEAREST;
 
     Image image{ "assets\\blackWhite.png" };
     Texture2D imageTexture{ "assets\\blackWhite.png", parameters };
+
+    Transform imageTransform{ };
+    imageTransform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
+    imageTransform.scale.y = (10.0f * (float)image.size.y) / (float)image.size.x;
+    imageTransform.scale.x = 10.0f;
 
     std::unique_ptr<ImageExtruder> extruder{ };
     extruder = std::make_unique<AxialGreedy>();
