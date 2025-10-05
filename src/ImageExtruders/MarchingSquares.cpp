@@ -33,6 +33,22 @@ Mesh MarchingSquares::ExtrudeImage(const Image& image) {
         }
     }
 
+    if (image.size.y % 2 == 1) {
+        std::vector<Pixel> extraRow{ };
+        extraRow.resize(image.size.x);
+        for (int i = 0; i < image.size.x; ++i) {
+            extraRow[i] = false;
+        }
+
+        pixels.push_back(extraRow);
+    }
+
+    if (image.size.x % 2 == 1) {
+        for (int i = 0; i < image.size.y; ++i) {
+            pixels[i].push_back(false);
+        }
+    }
+
     float left = 0.0f;
     float right = 10.0f;
     float top = 0.0f;
@@ -40,16 +56,114 @@ Mesh MarchingSquares::ExtrudeImage(const Image& image) {
 
     float depth = 1.0f;
 
-    std::vector<glm::vec3> positions{ };
-    std::vector<glm::vec2> uvs{ };
-    std::vector<unsigned int> indices{ };
-    unsigned int maxIndex = 0;
-
     float pixelWidth = (right - left) / image.size.x;
     float pixelHeight = (bottom - top) / image.size.y;
 
     float pwh = pixelWidth / 2.0f;
     float phh = pixelHeight / 2.0f;
+
+    using Cell = unsigned char;
+    std::vector<std::vector<Cell>> cells;
+
+    std::vector<glm::vec2> pos2D{ };
+
+    for (int x = 0; x < image.size.x; x += 2) {
+        for (int y = 0; y < image.size.y; y += 2) {
+            Cell cell = 0;
+
+            bool topLeft = pixels[y][x];
+            bool topRight = pixels[y][x + 1];
+            bool bottomRight = pixels[y + 1][x + 1];
+            bool bottomLeft = pixels[y + 1][x];
+
+            if (topLeft) cell |= 0b00000001;
+            if (topRight) cell |= 0b00000010;
+            if (bottomRight) cell |= 0b00000100;
+            if (bottomLeft) cell |= 0b00001000;
+
+            float TLnormalizedX = x / (float)image.size.x;
+            float TLxPosition = TLnormalizedX * (right - left) + left;
+
+            float TLnormalizedY = y / (float)image.size.y;
+            float TLyPosition = TLnormalizedY * (bottom - top) + top;
+
+            float BRnormalizedX = (x + 1) / (float)image.size.x;
+            float BRxPosition = BRnormalizedX * (right - left) + left;
+
+            float BRnormalizedY = (y + 1) / (float)image.size.y;
+            float BRyPosition = BRnormalizedY * (bottom - top) + top;
+
+            glm::vec2 topMiddle{ TLxPosition + pwh, TLyPosition - phh };
+            glm::vec2 rightMiddle{ BRxPosition + pwh, BRyPosition - phh };
+            glm::vec2 leftMiddle{ TLxPosition - pwh, TLyPosition + phh};
+            glm::vec2 bottomMiddle{ BRxPosition - pwh, BRyPosition + phh };
+
+            switch (cell) {
+            case 0:
+            case 15:
+                break;
+
+            case 1:
+            case 14:
+                pos2D.push_back(leftMiddle);
+                pos2D.push_back(topMiddle);
+                break;
+
+            case 2:
+            case 13:
+                pos2D.push_back(topMiddle);
+                pos2D.push_back(rightMiddle);
+                break;
+
+            case 3:
+            case 12:
+                pos2D.push_back(leftMiddle);
+                pos2D.push_back(rightMiddle);
+                break;
+
+            case 4:
+            case 11:
+                pos2D.push_back(rightMiddle);
+                pos2D.push_back(bottomMiddle);
+                break;
+
+            case 5:
+                pos2D.push_back(topMiddle);
+                pos2D.push_back(rightMiddle);
+
+                pos2D.push_back(bottomMiddle);
+                pos2D.push_back(leftMiddle);
+                break;
+
+            case 6:
+            case 9:
+                pos2D.push_back(topMiddle);
+                pos2D.push_back(bottomMiddle);
+                break;
+
+            case 7:
+            case 8:
+                pos2D.push_back(bottomMiddle);
+                pos2D.push_back(leftMiddle);
+                break;
+
+            case 10:
+                pos2D.push_back(leftMiddle);
+                pos2D.push_back(topMiddle);
+
+                pos2D.push_back(rightMiddle);
+                pos2D.push_back(bottomMiddle);
+                break;
+            }
+        }
+    }
+
+    std::vector<glm::vec3> positions{ };
+    std::vector<glm::vec2> uvs{ };
+    std::vector<unsigned int> indices{ };
+    unsigned int maxIndex = 0;
+
+
 
     std::vector<std::pair<glm::ivec2, glm::ivec2>> squares;
 
