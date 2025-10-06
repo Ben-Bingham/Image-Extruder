@@ -10,9 +10,10 @@ Image::Image(const std::string& path, bool flip) {
     size.x = x;
     size.y = y;
 
-    data.resize(4 * size.x * size.y * sizeof(unsigned char));
 
     if (d) {
+        data.resize(4 * size.x * size.y * sizeof(unsigned char));
+
         std::memcpy(data.data(), d, 4 * size.x * size.y * sizeof(unsigned char));
     }
     else {

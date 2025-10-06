@@ -178,7 +178,30 @@ void MoveCamera2D(OrthoCamera& camera, GLFWwindow* window, float dt, const glm::
     }
 }
 
-int main() {
+int main(int argc, char** argv) {
+    // Run in command line mode, dont show a GUI
+    if (argc > 1) {
+        for (int i = 1; i < argc; ++i) {
+            std::string path = argv[i];
+
+            std::cout << "Processing: " << path << std::endl;
+
+            Image image{ path };
+
+            std::unique_ptr<ImageExtruder> extruder{ };
+            extruder = std::make_unique<AxialGreedy>();
+
+            Mesh mesh = extruder->ExtrudeImage(image);
+
+            std::string fileName = path.substr(path.find_last_of("/\\") + 1);
+            ExportObj(fileName + ".obj", mesh);
+
+            std::cout << "Output file: " << fileName + ".obj" << std::endl;
+        }
+
+        return 0;
+    }
+
     glfwSetErrorCallback(glfwErrorCallback);
 
     if (!glfwInit()) {
