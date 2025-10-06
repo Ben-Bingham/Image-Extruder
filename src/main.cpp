@@ -273,8 +273,10 @@ int main() {
     parameters.magFilter = TextureFilteringMode::NEAREST;
     parameters.minFilter = TextureFilteringMode::NEAREST;
 
-    Image image{ "assets\\blackWhite.png" };
-    Texture2D imageTexture{ "assets\\blackWhite.png", parameters };
+    std::string path = "assets\\blackWhite.png";
+
+    Image image{ path };
+    Texture2D imageTexture{ path, parameters };
 
     Transform imageTransform{ };
     imageTransform.position = glm::vec3{ 0.0f, 0.0f, 5.0f };
